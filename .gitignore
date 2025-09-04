@@ -5,3 +5,5 @@
 /stereoscopic_sbs_from_depth_pixelwise.jpg
 /stereo_average.jpg
 /stereo_difference.jpg
+input/
+output/
