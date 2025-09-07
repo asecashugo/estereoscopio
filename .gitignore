@@ -7,3 +7,5 @@
 /stereo_difference.jpg
 input/
 output/
+*.skb
+credentials.json
