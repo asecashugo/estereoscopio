@@ -9,3 +9,9 @@ input/
 output/
 *.skb
 credentials.json
+token.json
+*.gc
+*.dwg
+*.dxf
+*.bak
+*.svg
