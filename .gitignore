@@ -15,3 +15,4 @@ token.json
 *.dxf
 *.bak
 *.svg
+gallery/*/*.jpg
