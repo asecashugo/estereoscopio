@@ -68,6 +68,9 @@ class GalleryBrowser(FloatLayout):
         Window.bind(on_key_down=self.on_key_down)
         self.update_view()
 
+    def toggle_fullscreen(self):
+        Window.fullscreen = not Window.fullscreen
+
     def update_view(self):
         self.clear_widgets()
         if self.state == 'albums':
@@ -135,11 +138,15 @@ class GalleryBrowser(FloatLayout):
                 self.add_widget(self.arrow_widget)
 
     def on_key_down(self, window, key, scancode, codepoint, modifier):
+        # 'w' key toggles fullscreen (key==119)
+        if key == 119:
+            self.toggle_fullscreen()
+            return
         if self.state == 'albums':
-            if key in (273, 119):  # Up arrow or 'w'
+            if key == 273:  # Up arrow
                 self.album_idx = (self.album_idx - 1) % len(self.albums) if self.albums else 0
                 self.update_view()
-            elif key in (274, 115):  # Down arrow or 's'
+            elif key == 274:  # Down arrow
                 self.album_idx = (self.album_idx + 1) % len(self.albums) if self.albums else 0
                 self.update_view()
             elif key in (275, 100):  # Right arrow or 'd'
@@ -156,11 +163,11 @@ class GalleryBrowser(FloatLayout):
             if key in (276, 97):  # Left arrow or 'a'
                 self.state = 'albums'
                 self.update_view()
-            elif key in (273, 119):  # Up arrow or 'w'
+            elif key == 273:  # Up arrow
                 if self.images:
                     self.image_idx = (self.image_idx - 1) % len(self.images)
                     self.update_view()
-            elif key in (274, 115):  # Down arrow or 's'
+            elif key == 274:  # Down arrow
                 if self.images:
                     self.image_idx = (self.image_idx + 1) % len(self.images)
                     self.update_view()
@@ -168,7 +175,8 @@ class GalleryBrowser(FloatLayout):
 
 class GalleryApp(App):
     def build(self):
-        Window.fullscreen = True
+        Window.size = (1920, 1080)
+        Window.fullscreen = False
         return GalleryBrowser()
 
 if __name__ == '__main__':
