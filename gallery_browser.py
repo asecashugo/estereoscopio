@@ -54,7 +54,30 @@ class ArrowIcons(Widget):
             Triangle(points=[cx-s/2, cy-s/2, cx-s/2, cy+s/2, cx+s/2, cy])
 
 
+from kivy.uix.widget import Widget
+from kivy.graphics import Color, Rectangle
+from kivy.animation import Animation
+
+class FadeOverlay(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.opacity = 0
+        with self.canvas:
+            Color(0, 0, 0, 1)
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        self.bind(pos=self.update_rect, size=self.update_rect, opacity=self.update_opacity)
+        self.update_opacity()
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+
+    def update_opacity(self, *args):
+        self.canvas.opacity = self.opacity
+
 class GalleryBrowser(FloatLayout):
+    def toggle_fullscreen(self):
+        Window.fullscreen = not Window.fullscreen
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.state = 'albums'  # 'albums' or 'images'
@@ -65,11 +88,30 @@ class GalleryBrowser(FloatLayout):
         self.display = Label(text='', font_size=32, halign='center', valign='middle', color=(1,1,1,1))
         self.img_widget = KivyImage(allow_stretch=True, keep_ratio=True)
         self.arrow_widget = None
+        self.fade_overlay = FadeOverlay(size_hint=(1,1), pos_hint={'x':0,'y':0})
+        self.added_fade = False
         Window.bind(on_key_down=self.on_key_down)
         self.update_view()
 
-    def toggle_fullscreen(self):
-        Window.fullscreen = not Window.fullscreen
+    def fade_to_black(self, callback=None):
+        if not self.added_fade:
+            self.add_widget(self.fade_overlay)
+            self.added_fade = True
+        self.fade_overlay.opacity = 0
+        anim = Animation(opacity=1, duration=0.3)
+        def after_fade(*a):
+            if callback:
+                callback()
+            anim2 = Animation(opacity=0, duration=0.3)
+            anim2.bind(on_complete=lambda *a: self.remove_fade())
+            anim2.start(self.fade_overlay)
+        anim.bind(on_complete=after_fade)
+        anim.start(self.fade_overlay)
+
+    def remove_fade(self):
+        if self.added_fade:
+            self.remove_widget(self.fade_overlay)
+            self.added_fade = False
 
     def update_view(self):
         self.clear_widgets()
@@ -165,12 +207,16 @@ class GalleryBrowser(FloatLayout):
                 self.update_view()
             elif key == 273:  # Up arrow
                 if self.images:
-                    self.image_idx = (self.image_idx - 1) % len(self.images)
-                    self.update_view()
+                    def update_img():
+                        self.image_idx = (self.image_idx - 1) % len(self.images)
+                        self.update_view()
+                    self.fade_to_black(update_img)
             elif key == 274:  # Down arrow
                 if self.images:
-                    self.image_idx = (self.image_idx + 1) % len(self.images)
-                    self.update_view()
+                    def update_img():
+                        self.image_idx = (self.image_idx + 1) % len(self.images)
+                        self.update_view()
+                    self.fade_to_black(update_img)
 
 
 class GalleryApp(App):
