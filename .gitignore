@@ -16,3 +16,4 @@ token.json
 *.bak
 *.svg
 gallery/*/*.jpg
+*.pyc
